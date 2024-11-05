@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팀 배정 프로그램</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .teams-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .team {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .team-header {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .stats {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .member {
+            margin: 5px 0;
+            padding: 5px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+        .gaon {
+            color: #2563eb;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .attempts {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>팀 배정 프로그램</h1>
+        <button onclick="assignTeams()">팀 배정하기</button>
+        <div id="attempts" class="attempts"></div>
+        <div class="teams-container" id="teamsContainer"></div>
+    </div>
+
+    <script>
+        const members = [
+            { name: '박민성', gender: '남', isGaon: true },
+            { name: '서민덕', gender: '남', isGaon: true },
+            { name: '김수아', gender: '여', isGaon: false },
+            { name: '서현진', gender: '여', isGaon: false },
+            { name: '송월', gender: '여', isGaon: false },
+            { name: '연', gender: '여', isGaon: false },
+            { name: '이채은', gender: '여', isGaon: true },
+            { name: '이채은', gender: '여', isGaon: false },
+            { name: '홍태화', gender: '남', isGaon: false },
+            { name: '구현모', gender: '남', isGaon: false },
+            { name: '김민', gender: '여', isGaon: true },
+            { name: '원지현', gender: '여', isGaon: false },
+            { name: '이주앙', gender: '남', isGaon: false },
+            { name: '김민채', gender: '여', isGaon: true },
+            { name: '임주현', gender: '남', isGaon: true },
+            { name: '박원빈', gender: '남', isGaon: false },
+            { name: '변지환', gender: '남', isGaon: true }
+        ];
+
+        let attempts = 0;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function calculateTeamStats(team) {
+            const maleCount = team.filter(m => m.gender === '남').length;
+            const femaleCount = team.filter(m => m.gender === '여').length;
+            const gaonCount = team.filter(m => m.isGaon).length;
+            return { maleCount, femaleCount, gaonCount };
+        }
+
+        function isBalanced(team1, team2) {
+            const stats1 = calculateTeamStats(team1);
+            const stats2 = calculateTeamStats(team2);
+            
+            const gaonDiff = Math.abs(stats1.gaonCount - stats2.gaonCount);
+            const maleDiff = Math.abs(stats1.maleCount - stats2.maleCount);
+            const femaleDiff = Math.abs(stats1.femaleCount - stats2.femaleCount);
+            
+            return gaonDiff <= 1 && maleDiff <= 2 && femaleDiff <= 2;
+        }
+
+        function displayTeams(team1, team2) {
+            const container = document.getElementById('teamsContainer');
+            const stats1 = calculateTeamStats(team1);
+            const stats2 = calculateTeamStats(team2);
+            
+            container.innerHTML = `
+                <div class="team">
+                    <div class="team-header">
+                        <h2>1조 (${team1.length}명)</h2>
+                        <div class="stats">
+                            남: ${stats1.maleCount} | 여: ${stats1.femaleCount} | 가온회: ${stats1.gaonCount}
+                        </div>
+                    </div>
+                    ${team1.map(member => `
+                        <div class="member ${member.isGaon ? 'gaon' : ''}">
+                            ${member.name} (${member.gender}${member.isGaon ? ', 가온회' : ''})
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="team">
+                    <div class="team-header">
+                        <h2>2조 (${team2.length}명)</h2>
+                        <div class="stats">
+                            남: ${stats2.maleCount} | 여: ${stats2.femaleCount} | 가온회: ${stats2.gaonCount}
+                        </div>
+                    </div>
+                    ${team2.map(member => `
+                        <div class="member ${member.isGaon ? 'gaon' : ''}">
+                            ${member.name} (${member.gender}${member.isGaon ? ', 가온회' : ''})
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('attempts').textContent = `시도 횟수: ${attempts}`;
+        }
+
+        function assignTeams() {
+            let maxAttempts = 1000;
+            attempts = 0;
+            
+            while (attempts < maxAttempts) {
+                const shuffled = shuffle([...members]);
+                const team1 = shuffled.slice(0, 8);
+                const team2 = shuffled.slice(8);
+                
+                if (isBalanced(team1, team2)) {
+                    displayTeams(team1, team2);
+                    attempts++;
+                    return;
+                }
+                
+                attempts++;
+            }
+            
+            alert('균형잡힌 팀을 찾지 못했습니다. 다시 시도해주세요.');
+        }
+    </script>
+</body>
+</html>
